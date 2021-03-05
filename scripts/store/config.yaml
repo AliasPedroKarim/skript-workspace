@@ -1,0 +1,17 @@
+# For language french and english supported
+language: 'fr'
+
+# Vixio Client Discord
+discord:
+    enable: true
+    name_client: NAME BOT HERE
+    token: TOKEN HERE
+
+# Minecraft to Discord
+webhooks:
+    - WEBHOOK LINK HERE
+
+# Discord to Minecraft
+channels: 
+    - CHANNEL ID HERE
+    - CHANNEL ID HERE
