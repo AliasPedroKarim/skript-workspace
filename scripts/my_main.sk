@@ -1,0 +1,138 @@
+# EVENTS
+
+on load:
+    loop all players:
+        load yaml "%get_store()%/userdata/%loop-player's uuid%.yaml" as "userplayer.%loop-player%"
+    stop
+
+every 3 seconds:
+    loop all players:
+        show_scoreboard_info(loop-player)
+    stop
+
+on join:
+    console command "/process_discord join %player%"
+    load yaml "%get_store()%/userdata/%player's uuid%.yaml" as "userplayer.%player%"
+
+    set {_uuid} to yaml value "info.player.uuid" from "userplayer.%player%"
+    if {_uuid} isn't set:
+        set yaml value "info.player.uuid" from "userplayer.%player%" to player's uuid
+        set yaml value "info.player.username" from "userplayer.%player%" to "%player%"
+        set yaml value "info.activity.first" from "userplayer.%player%" to now
+        set yaml value "info.activity.last" from "userplayer.%player%" to now
+        set yaml value "info.language" from "userplayer.%player%" to "fr"
+    else:
+        set {_username} to yaml value "info.player.username" from "userplayer.%player%"
+        if {_username} isn't "%player%":
+            set yaml value "info.player.username" from "userplayer.%player%" to "%player%"
+        set yaml value "info.activity.last" from "userplayer.%player%" to now
+
+    set {cache_players::%ip of player%} to "%player%"
+    save yaml "userplayer.%player%"
+
+    # --- Scoreboard 
+
+    show_scoreboard_info(player)
+    stop
+
+on first join:
+    console command "/process_discord first_join %player%"
+    stop
+
+on quit:
+    wait 1 second
+    save yaml "userplayer.%player%"
+    unload yaml "userplayer.%player%"
+    console command "/process_discord quit %player%"
+    stop
+
+
+
+on chat:
+    if message is "-worlds":
+        if player is "PedroKarim64":
+            cancel event
+            
+            open chest with 3 rows named "&9[ &2Worlds Changes &9]" to player
+            set {_i} to 0
+
+            loop all worlds:
+                add "%loop-world%" to {_worlds::*}
+                wait 2 tick
+            
+                set {_t} to {_i} + 1
+
+                set {_toto} to "/mvtp %{_worlds::%{_t}%}%"
+
+                format slot {_i} of player with grass named "&fMonde | &c%loop-world%" to close then run [make player execute command {_toto}]
+                
+                log {_toto}
+
+                set {_i} to sum({_i}, 1)
+
+
+            stop
+
+    set {_message} to message
+
+    if {_message} isn't "":
+        replace "&a" or "&b" or "&c" or "&d" or "&e" or "&f" or "&r" or "&0" or "&1" or "&2" or "&3" or "&4" or "&5" or "&6" or "&7" or "&8" or "&9" with "" in {_message}
+        console command "/process_discord chat %player% %{_message}%"
+        # set message to colored message
+    stop
+
+on skript start:
+    set {_language} to get_lang()
+
+    wait 5 ticks
+    set {_prefix} to yaml value "message.prefix" from "dm.lang.%{_language}%"
+    set {_send} to yaml value "message.load.start" from "dm.lang.%{_language}%"
+
+    broadcast "%{_prefix}% %{_send}%"
+    stop
+    
+
+on player advancement complete:
+    set {_language} to get_lang()
+
+    set {_complete} to yaml value "message.events.advancements.complete" from "dm.lang.%{_language}%"
+    
+    replace "$player" with "%event-player%" in {_complete}
+
+    # Advancement title
+    set {_advancement} to "%event-key%"
+    replace "/" with "." in {_advancement}
+    replace "minecraft:" with "" in {_advancement}
+    set {_a_title} to yaml value "message.events.advancements.%{_advancement}%__title" from "dm.lang.%{_language}%"
+    set {_a_decription} to yaml value "message.events.advancements.%{_advancement}%__description" from "dm.lang.%{_language}%"
+
+    # Check if achievement translate exist (but at the same time avoids the advancements recipes).
+    if {_a_title} is set:
+        replace "$advancement" with "%{_a_title}%" in {_complete}
+
+        console command "/process_discord advancement %event-player% %{_complete}%\n_%{_a_decription}%_"
+    else:
+        send "EVENT ADVANCEMENT: %event-player% <> %event-key%" to console
+    stop
+
+
+on death of player:
+    set {_language} to get_lang()
+
+    set {_msg_death} to yaml value "message.events.damages_causes.%damage cause%" from "dm.lang.%{_language}%"
+
+    if {_msg_death} is set:
+        replace "$victim" with "%victim%" in {_msg_death}
+        replace "$attacker" with "%attacker%" in {_msg_death}
+
+        console command "/process_discord death %victim% %{_msg_death}%"
+    stop
+
+on server list ping:
+    reset the server hover list
+    add "&9&lSalut ! &fVoici encore un serveur &cbizarre (&kkkk&r&c)&f qui traine sur internet..." to the server hover list
+    if {cache_players::%ip%} is set:
+        set the motd to "§3My §lAwesome§r§3 Server for §cProgramming §4§kkkk§r%nl%Rebonjour %{cache_players::%ip%}% !"
+    else:
+        set the motd to "§3My §lAwesome§r§3 Server for §cProgramming §4§kkkk"
+    stop 

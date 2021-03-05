@@ -1,0 +1,55 @@
+# --- Struncture ---
+#
+# jobs
+#   jobs:
+#     name: Name Jobs
+#     listeners:
+#       event_name:
+#         item_name:
+#           item: item name
+#           xp: 0.1
+#           money: 0.1
+#           lvl: 2
+
+
+jobs:
+  miner:
+    name: Miner
+    listeners:
+      # ref: event_name --> on [event_name]
+      mine:
+        diamond ore:
+          item: diamond ore 
+          xp: 3.1
+          money: 6
+          lvl: 2
+        iron ore:
+          item: iron ore 
+          xp: 2.1
+          money: 4.5
+          lvl: 0
+
+      smelt:
+        iron ore:
+          item: iron ore 
+          xp: 0.1
+          money: 0.1
+          lvl: 0
+
+  farmer:
+    name: Farmer
+    listeners:
+      craft:
+        loaves of bread:
+          item: loaves of bread
+          xp: 0.1
+          money: 0.1
+          lvl: 2
+
+  lumberjack:
+    name: Lumberjack
+    listeners:
+
+  hunter:
+    name: Hunter
+    listeners:

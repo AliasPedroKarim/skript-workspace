@@ -1,0 +1,129 @@
+# COMMANDS
+
+command /fly [<player>]:
+    executable by: players
+    description: Permet d'activer ou désactiver le vol.
+    permission: dm.permissions.fly
+    permission message: Pas la permission de fait la command [/fly].
+    trigger:
+        if arg-1 is set:
+            set {_player} to arg-1
+        else:
+            set {_player} to player
+        
+        set {_language} to get_lang_player({_player})
+
+        if {_player} can fly:
+            make {_player} stop flying
+            if arg-1 is set:
+                set {_message} to yaml value "message.commands.fly.stop_by" from "dm.lang.%{_language}%"
+            else:
+                set {_message} to yaml value "message.commands.fly.stop" from "dm.lang.%{_language}%"
+        else:
+            make {_player} start flying
+            if arg-1 is set:
+                set {_message} to yaml value "message.commands.fly.start_by" from "dm.lang.%{_language}%"
+            else:
+                set {_message} to yaml value "message.commands.fly.start" from "dm.lang.%{_language}%"
+        
+        replace "$player" with "%{_player}%" in {_message}
+        send {_message} to player
+        stop
+
+command /speed <number>:
+    executable by: players
+    description: Permet d'activer ou désactiver le vol.
+    permission: dm.permissions.fly
+    permission message: Pas la permission de fait la command [/fly].
+    trigger:
+        set {_language} to get_lang_player(player)
+
+        if arg-1 isn't set:
+            set {_speed} to 1
+        else:
+            set {_speed} to arg-1
+    
+        if arg-1 is between 1 and 5:
+            if player can fly:
+                set player's fly speed to {_speed} * 0.1
+                set {_message} to yaml value "message.commands.speed.fly" from "dm.lang.%{_language}%"
+            else:
+                set player's walk speed to {_speed} * 0.2
+                set {_message} to yaml value "message.commands.speed.walk" from "dm.lang.%{_language}%"
+            
+            replace "$amount" with "%arg-1%" in {_message}
+            send {_message} to player
+        else: 
+            set {_invalid} to yaml value "message.commands.speed.invalid" from "dm.lang.%{_language}%"
+            send {_invalid} to player
+        stop
+
+
+# command /secret:
+# 	trigger:
+# 		set {_gui} to a new chest inventory with 6 row with name "Secret Inventory"
+# 		set slot 0 of {_gui} to stone
+# 		open {_gui} to player
+
+command /gm <text> [<text>]:
+    permission: minecraft.command.gamemode
+    usage: /gm <number/mode/player> [<number/mode>]
+    description: Simple change gamemode
+    trigger:
+        set {_language} to get_lang_player(player)
+
+        # Player
+        if arg-2 is set:
+            set {_player} to arg-1 parsed as player
+            if {_player} isn't set:
+                set {_message} to yaml value "message.commands.gm.player_no_found" from "dm.lang.%{_language}%"
+                replace "$player" with arg-1 in {_message}
+                send {_message} to player
+                stop
+            set {_message} to yaml value "message.commands.gm.other" from "dm.lang.%{_language}%"
+        else:
+            set {_player} to player
+            set {_message} to yaml value "message.commands.gm.self" from "dm.lang.%{_language}%"
+
+
+        # Mode
+        if arg-2 is set:
+            set {_mode_number} to arg-2 parsed as number
+        else:
+            set {_mode_number} to arg-1 parsed as number
+
+        if {_mode_number} isn't set:
+            if arg-2 is set:
+                set {_mode_number} to arg-2
+            else:
+                set {_mode_number} to arg-1
+
+            if {_mode_number} is "survival":
+                set {_mode_number} to 0
+            else if {_mode_number} is "creative":
+                set {_mode_number} to 1
+            else if {_mode_number} is "adventure":
+                set {_mode_number} to 2
+            else if {_mode_number} is "spectator":
+                set {_mode_number} to 3
+
+        if {_mode_number} is 0:
+            set {_player}'s game mode to survival
+            set {_mode} to yaml value "message.commands.gm.survival" from "dm.lang.%{_language}%"
+        else if {_mode_number} is 1:
+            set {_player}'s game mode to creative
+            set {_mode} to yaml value "message.commands.gm.creative" from "dm.lang.%{_language}%"
+        else if {_mode_number} is 2:
+            set {_player}'s game mode to adventure
+            set {_mode} to yaml value "message.commands.gm.adventure" from "dm.lang.%{_language}%"
+        else if {_mode_number} is 3:
+            set {_player}'s game mode to spectator
+            set {_mode} to yaml value "message.commands.gm.spectator" from "dm.lang.%{_language}%"
+        else:
+            send yaml value "message.commands.gm.mode_invalid" from "dm.lang.%{_language}%" to player
+            stop
+
+        replace "$player" with "%{_player}%" in {_message}
+        replace "$gamemode" with "%{_mode}%" in {_message}
+        send {_message} to player
+        stop 

@@ -1,0 +1,40 @@
+# LOGIN 
+
+on skript load:
+    login to get_token() with the name get_bot_name()
+    stop
+
+on guild message received seen by "%get_bot_name()%":
+    # --- Reload configuration if isn't load
+
+    yaml "dm.config" isn't loaded:
+        load yaml "%get_store()%/config.yaml" as "dm.config"
+
+    # ---
+
+    set {_message} to content of event-message
+
+    if {_message} isn't "":
+        if yaml node "channels" from "dm.config" has list:
+            loop yaml list "channels" from "dm.config":
+                if discord id of event-channel is "%loop-val%":
+                    if bot state of event-user is false:
+                        broadcast "§f[§3%discord name of event-guild%§f](§6%discord name of event-channel%§f) §9%discord name of event-user%##%discriminator of event-user% §f: %{_message}%"
+                        add reactions "<:tickYes:726151754613391482>" to reactions of event-message
+    stop 
+
+on private message received:
+    set {_framents::*} to content of event-message split by " "
+
+    if content of event-message starts with "-":
+        if "%{_framents::1}%" is "-m" or "-msg":
+            if {_framents::2} is set: 
+                if {_framents::3} is set: 
+                    loop all players:
+                        if loop-player's name is "%{_framents::2}%":
+                            remove {_framents::1} from {_framents::*}
+                            remove {_framents::2} from {_framents::*}
+                            set {_message} to join {_framents::*} with the delimiter " "
+                            send "§f[§6Private Discord§f] §9%discord name of event-user%##%discriminator of event-user% §f: %{_message}%" to loop-player
+                            stop loop
+    stop

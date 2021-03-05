@@ -1,0 +1,119 @@
+# OPTIONS
+
+options:
+    dir : plugins/Skript/scripts
+    store : plugins/Skript/scripts/store
+    default lang : en
+
+    # Decimal numeral system, not Hexadecimal
+    color red : 16733525
+    color green : 5635925
+
+# FUNCTION
+
+# --- Normal
+
+function load_necessary():
+    # Configuration
+    yaml "{@store}/config.yaml" is not loaded:
+        load yaml "{@store}/config.yaml" as "dm.config"
+    
+    # Language
+    yaml "{@store}/lang/fr-FR.yaml" is not loaded:
+        load yaml "{@store}/lang/fr-FR.yaml" as "dm.lang.fr"
+    
+    yaml "{@store}/lang/en-US.yaml" is not loaded:
+        load yaml "{@store}/lang/en-US.yaml" as "dm.lang.en"
+
+# Get language script
+function get_lang() :: text: 
+    load_necessary()
+
+    set {_language} to yaml value "language" from "dm.config"
+    if {_language} isn't set:
+        set yaml value "language" from "dm.config" to "{@default lang}"
+        save yaml "dm.config"
+        set {_language} to yaml value "language" from "dm.config"
+
+    return {_language}
+
+# Get language server
+function get_lang_player(player: player) :: text:
+    load_necessary()
+
+    if {_player} is set:
+        load yaml "{@store}/userdata/%{_player}'s uuid%.yaml" as "userplayer.%{_player}%"
+            
+        set {_language} to yaml value "info.language" from "userplayer.%{_player}%"
+        if {_language} isn't set:
+            set yaml value "info.language" from "userplayer.%{_player}%" to "{@default lang}"
+            save yaml "userplayer.%{_player}%"
+            set {_language} to yaml value "info.language" from "userplayer.%{_player}%"
+
+        return {_language}
+    return "{@default lang}"
+
+
+function show_scoreboard_info(player: player):
+    wipe {_player} sidebar
+    set name of sidebar of {_player} to "&3Information"
+    
+    if {_player} can fly:
+        set {_fly} to "on"
+    else:
+        set {_fly} to "off"
+    
+    if {_player} is op:
+        set {_op} to "yes"
+    else:
+        set {_op} to "non"
+
+    set score "&fPseudo : &c%{_player}%" in sidebar of {_player} to 4
+    set score "&fVol : &c%{_fly}%" in sidebar of {_player} to 3
+    set score "&fOpérateur : &c%{_op}%" in sidebar of {_player} to 2
+    set score "&fMonde : &c%{_player}'s world%" in sidebar of {_player} to 1
+
+
+# --- Getter
+
+function get_store() :: text:
+    return "{@store}"
+
+function get_dir() :: text:
+    return "{@dir}"
+
+function get_default_lang() :: text:
+    return "{@default lang}"
+
+function get_color_red() :: text:
+    return "{@color red}"
+
+function get_color_green() :: text:
+    return "{@color green}"
+
+function get_token() :: text:
+    load_necessary()
+
+    set {_token} to yaml value "discord.token" from "dm.config"
+    if {_token} isn't set:
+        set {_token} to ""
+
+    return {_token}
+
+function get_bot_name() :: text:
+    load_necessary()
+
+    set {_name} to yaml value "discord.name" from "dm.config"
+    if {_name} isn't set:
+        set {_name} to "Discord Bot"
+
+    return {_name}
+
+function discord_is_enable() :: boolean:
+    load_necessary()
+
+    set {_enable} to yaml value "discord.enable" from "dm.config"
+    if {_enable} is "true":
+        return true
+
+    return false 

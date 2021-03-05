@@ -1,0 +1,105 @@
+# TODO 
+# L'historique des blocks
+# ...
+
+# color (blue|green|pink|purple|red|white|yellow)
+# style (notched_6|notched_10|notched_12|notched_20|progress)
+# max limit -> 1 and 2147483647
+# value limit -> 0 and 2147483647
+
+command /removebossbar:
+    trigger:
+        remove bossbar "bossbar_%player's uuid%"
+
+function math_pow(n: number, pow: number) :: number:
+    loop {_pow} times:
+        set {_n} to {_n} * {_pow}
+    return {_n}
+
+function lvl_formula(lvl: number) :: number:
+    return (5 * (math_pow({_lvl}, 2)) + (50 * {_lvl}) + 100)
+
+function xp_formula(xp_item: number, lvl: number) :: number:
+    return ({_xp_item} * (math_pow({_lvl}, 2)) + (50 * {_lvl}) + 100)
+
+function on_show_bossbar(p: player, message: text = "Boss Bar defaut text", time: timespan = 5 seconds, value: number = 0, color: colors = blue):
+    create bossbar titled {_message} and id "bossbar_%{_p}'s uuid%" for {_p} with value {_value} with colors green with style segmented 6
+    wait {_time}
+    remove bossbar "bossbar_%{_p}'s uuid%"
+
+function load_config_jobs():
+    yaml "plugins/Skript/scripts/enderium/jobs.yaml" is not loaded:
+        load yaml "plugins/Skript/scripts/enderium/jobs.yaml" as "enderium.jobs"
+
+on mine:
+    load_config_jobs()
+    
+    yaml "plugins/Skript/scripts/APIxMJ/userdata/%player's uuid%.yml" is not loaded:
+        load yaml "plugins/Skript/scripts/APIxMJ/userdata/%player's uuid%.yml" as "userplayer_test.%player's uuid%"
+        # save yaml "userplayer_test.%player's uuid%"
+
+
+    set {_jobs_config} to yaml value "jobs" from "enderium.jobs"
+
+    if {_jobs_config} isn't set:
+        stop
+
+    loop yaml node keys "jobs" from "enderium.jobs":
+        # broadcast "Node: %loop-node% | ID: %loop-id% | Key: %loop-key%"
+
+        set {_jobs} to yaml value "jobs.%loop-key%" from "userplayer_test.%player's uuid%"
+        if {_jobs} isn't set:
+            set yaml value "jobs.%loop-key%.lvl" from "userplayer_test.%player's uuid%" to 0
+            set yaml value "jobs.%loop-key%.xp" from "userplayer_test.%player's uuid%" to 0
+
+
+        set {_money} to yaml value "money" from "userplayer_test.%player's uuid%"
+        if {_jobs} isn't set:
+            set yaml value "money.balance" from "userplayer_test.%player's uuid%" to 0
+            set yaml value "money.bank" from "userplayer_test.%player's uuid%" to 0
+
+        set {_item_config} to yaml value "jobs.%loop-value%.listeners.mine.%item%" from "enderium.jobs"
+
+        if {_item_config} isn't "":
+        
+            set {_jobs_name} to yaml value "jobs.%loop-value%.name" from "enderium.jobs"
+            if {_jobs_name} isn't set:
+                set {_jobs_name} to "Jobs No Name"
+
+            set {_item_config_lvl} to yaml value "jobs.%loop-value%.listeners.mine.%item%.lvl" from "enderium.jobs"
+            set {_player_job_lvl} to yaml value "jobs.%loop-key%.lvl" from "userplayer_test.%player's uuid%"
+
+            if {_player_job_lvl} >= {_item_config_lvl}:
+                # broadcast "%{_item_config}% %the type of {_item_config}%"
+
+                set {_player_jobs_money} to yaml value "money.balance" from "userplayer_test.%player's uuid%"
+                set {_player_job_xp} to yaml value "jobs.%loop-key%.xp" from "userplayer_test.%player's uuid%"
+
+                set {_item_config_money} to yaml value "jobs.%loop-value%.listeners.mine.%item%.money" from "enderium.jobs"
+                set {_item_config_xp} to yaml value "jobs.%loop-value%.listeners.mine.%item%.xp" from "enderium.jobs"
+
+
+                set yaml value "money.balance" from "userplayer_test.%player's uuid%" to {_player_jobs_money} + {_item_config_money}
+                set yaml value "jobs.%loop-key%.xp" from "userplayer_test.%player's uuid%" to sum({_player_job_xp}, {_item_config_xp})
+
+                set {_player_job_xp} to yaml value "jobs.%loop-key%.xp" from "userplayer_test.%player's uuid%"
+
+                set {_max_xp_jobs} to xp_formula({_item_config_xp}, {_player_job_lvl})
+
+                if {_player_job_xp} >= {_max_xp_jobs}:
+                    set yaml value "jobs.%loop-key%.xp" from "userplayer_test.%player's uuid%" to {_player_job_xp} - {_max_xp_jobs}
+                    set {_player_job_xp} to yaml value "jobs.%loop-key%.xp" from "userplayer_test.%player's uuid%"
+                    set yaml value "jobs.%loop-key%.lvl" from "userplayer_test.%player's uuid%" to {_player_job_lvl} + 1
+                    set {_player_job_lvl} to yaml value "jobs.%loop-key%.lvl" from "userplayer_test.%player's uuid%"
+
+                    send "&aTu viens de passer niveau &e%{_player_job_lvl}% &apour le metier de &a%{_jobs_name}%."
+
+
+                on_show_bossbar(player, "&fLvl %{_player_job_lvl}% &8%{_jobs_name}% %{_player_job_xp}%/%{_max_xp_jobs}% xp §7(&f+%{_item_config_xp}%§7)", 4 seconds, 100, green)
+                send action bar "&aVous recevez: &e%{_item_config_money}%$ &f& &7%{_item_config_xp}%xp" to player
+            
+        set {_item_config} to ""
+    save yaml "userplayer_test.%player's uuid%"
+
+on craft:
+    broadcast "%player% vient de crafté >> %item%"

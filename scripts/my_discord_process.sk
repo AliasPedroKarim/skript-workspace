@@ -1,0 +1,59 @@
+# COMMAND
+
+command /process_discord [<text="empty">] [<text="">] [<text="">] [<text="">] [<text="">]:
+    executable by: console
+    trigger:
+        set {_language} to get_lang()
+
+        # ---
+
+        if arg-1 is "chat":
+            # NOTE
+            # escaped invalid header
+            # safe and encoded <none> string
+ 
+            # Enfaite non ils sont tous à none maintenant
+            # Les var sont à <none> aussi sur la chaine de char
+
+            # Bah ! Enfaite les varible ne veulent ce print direct sur la chaine de caractère
+
+            if yaml node "webhooks" from "dm.config" has list:
+                loop yaml list "webhooks" from "dm.config":
+                    # Request POST
+
+                    # Headers (EUH ENFAITE SKRIPT SO RETARD !!!) 
+                    # "Content-Type: application/json"
+                    # "User-Agent: PostmanRuntime/7.26.5" (de base le User-Agent est à "User-Agent: Java/x.x.x_x" est on dirait que discord n'aime pas trop Java xD)
+
+                    send a "post" request to "%loop-val%" with the headers "Content-Type: application/json", and "User-Agent: PostmanRuntime/7.26.5" and the body "{""username"": ""%arg-2%"", ""avatar_url"": ""https://cravatar.eu/helmavatar/%arg-2%/120.png"", ""content"": ""%arg-3% %arg-4% %arg-5%""}"
+            stop 
+
+        if arg-1 is "first_join":
+            if yaml node "webhooks" from "dm.config" has list:
+                loop yaml list "webhooks" from "dm.config":
+                    send a "post" request to "%loop-val%" with the headers "Content-Type: application/json", and "User-Agent: PostmanRuntime/7.26.5" and the body "{ ""embeds"": [ { ""color"": ""%get_color_green()%"", ""author"": { ""name"": ""%arg-2% vient de nous rejoindre pour la première fois 😃."", ""icon_url"": ""https://cravatar.eu/helmavatar/%arg-2%/120.png"" } } ] }"
+            stop
+
+        if arg-1 is "join":
+            if yaml node "webhooks" from "dm.config" has list:
+                loop yaml list "webhooks" from "dm.config":
+                    send a "post" request to "%loop-val%" with the headers "Content-Type: application/json", and "User-Agent: PostmanRuntime/7.26.5" and the body "{ ""embeds"": [ { ""color"": ""%get_color_green()%"", ""author"": { ""name"": ""%arg-2% vient de rejoindre le serveur 😎."", ""icon_url"": ""https://cravatar.eu/helmavatar/%arg-2%/120.png"" } } ] }"
+            stop
+            
+        if arg-1 is "quit":
+            if yaml node "webhooks" from "dm.config" has list:
+                loop yaml list "webhooks" from "dm.config":
+                    send a "post" request to "%loop-val%" with the headers "Content-Type: application/json", and "User-Agent: PostmanRuntime/7.26.5" and the body "{ ""embeds"": [ { ""color"": ""%get_color_red()%"", ""author"": { ""name"": ""%arg-2% nous a quitté. Paix à son âme 😔."", ""icon_url"": ""https://cravatar.eu/helmavatar/%arg-2%/120.png"" } } ] }"
+            stop
+            
+        if arg-1 is "advancement":
+            if yaml node "webhooks" from "dm.config" has list:
+                loop yaml list "webhooks" from "dm.config":
+                    send a "post" request to "%loop-val%" with the headers "Content-Type: application/json", and "User-Agent: PostmanRuntime/7.26.5" and the body "{ ""embeds"": [ { ""color"": ""%get_color_green()%"",  ""description"": ""%arg-3% %arg-4% %arg-5%"", ""author"": { ""name"": ""Advancement..."", ""icon_url"": ""https://cravatar.eu/helmavatar/%arg-2%/120.png"" } } ] }"
+            stop
+            
+        if arg-1 is "death":
+            if yaml node "webhooks" from "dm.config" has list:
+                loop yaml list "webhooks" from "dm.config":
+                    send a "post" request to "%loop-val%" with the headers "Content-Type: application/json", and "User-Agent: PostmanRuntime/7.26.5" and the body "{ ""embeds"": [ { ""color"": ""%get_color_red()%"", ""author"": { ""name"": ""%arg-3% %arg-4% %arg-5%"", ""icon_url"": ""https://cravatar.eu/helmavatar/%arg-2%/120.png"" } } ] }"
+            stop
